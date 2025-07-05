@@ -114,13 +114,16 @@
             border: 1px solid rgba(143, 148, 251, 0.3);
         }
         
-        .wallet-info .address {
+        .wallet-address {
             font-weight: 500;
             font-size: 14px;
             background: rgba(30, 41, 59, 0.7);
             padding: 4px 12px;
             border-radius: 20px;
             color: var(--secondary);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .btn {
@@ -172,6 +175,7 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+            opacity: 0.7;
         }
         
         .main-grid {
@@ -610,8 +614,8 @@
                 <div class="brand">CUSTODIA</div>
             </div>
             <div class="wallet-info">
-                <div id="walletAddress">Not connected</div>
-                <button id="connectWalletBtn" class="btn">
+                <div class="wallet-address" id="walletAddress">Not connected</div>
+                <button class="btn" id="connectWalletBtn">
                     <i class="fas fa-wallet"></i> Connect Wallet
                 </button>
             </div>
@@ -833,7 +837,7 @@
         let provider;
         let signer;
         let escrowContract;
-        let currentAccount;
+        let currentAccount = null;
         let contractAddress;
         
         // Contract ABI
@@ -939,34 +943,6 @@
         
         // Initialize the application
         async function initApp() {
-            // Check if Web3 provider is available
-            if (window.ethereum) {
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                
-                // Check if user is already connected
-                const accounts = await provider.listAccounts();
-                if (accounts.length > 0) {
-                    currentAccount = accounts[0];
-                    updateWalletInfo();
-                }
-                
-                // Listen for account changes
-                window.ethereum.on('accountsChanged', (accounts) => {
-                    if (accounts.length > 0) {
-                        currentAccount = accounts[0];
-                        updateWalletInfo();
-                        showToast('Wallet account changed', 'info');
-                    } else {
-                        currentAccount = null;
-                        walletDisplay.textContent = 'Not connected';
-                        connectWalletBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
-                        showToast('Wallet disconnected', 'info');
-                    }
-                });
-            } else {
-                showToast('Please install MetaMask to use this DApp', 'error');
-            }
-            
             // Event listeners
             connectWalletBtn.addEventListener('click', connectWallet);
             createForm.addEventListener('submit', createEscrow);
@@ -983,46 +959,28 @@
         
         // Connect wallet function
         async function connectWallet() {
+            if (typeof window.ethereum === 'undefined') {
+                showToast('No wallet found. Please install Brave Wallet or MetaMask.', 'error');
+                return;
+            }
+            
             try {
-                if (typeof window.ethereum === 'undefined') {
-                    showToast('No Ethereum wallet detected. Please install MetaMask or use Brave browser.', 'error');
-                    return;
-                }
-
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const accounts = await provider.send("eth_requestAccounts", []);
-                const signer = provider.getSigner();
-                const address = await signer.getAddress();
-                currentAccount = address;
-
-                walletDisplay.textContent = `Connected: ${shortenAddress(address)}`;
-                connectWalletBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                currentAccount = accounts[0];
                 
-                showToast('Wallet connected successfully', 'success');
+                // Update UI
+                walletDisplay.textContent = `Connected: ${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
+                connectWalletBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+                connectWalletBtn.disabled = true;
                 
                 // Update global references
-                window.provider = provider;
-                window.signer = signer;
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
                 
-            } catch (err) {
-                console.error('Wallet connection failed:', err);
-                showToast('Wallet connection failed: ' + err.message, 'error');
-            }
-        }
-        
-        // Shorten address for display
-        function shortenAddress(addr) {
-            return addr.slice(0, 6) + "..." + addr.slice(-4);
-        }
-        
-        // Update wallet information
-        function updateWalletInfo() {
-            if (currentAccount) {
-                walletDisplay.textContent = `Connected: ${shortenAddress(currentAccount)}`;
-                connectWalletBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
-            } else {
-                walletDisplay.textContent = 'Not connected';
-                connectWalletBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
+                showToast('Wallet connected successfully!', 'success');
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+                showToast('Wallet connection failed: ' + error.message, 'error');
             }
         }
         
