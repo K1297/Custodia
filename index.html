@@ -406,6 +406,75 @@
             -webkit-text-fill-color: transparent;
         }
         
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50, #1a2a6c);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        
+        .close-modal:hover {
+            opacity: 1;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
         @media (max-width: 768px) {
             .state-machine {
                 flex-wrap: wrap;
@@ -506,19 +575,19 @@
                 <div class="detail-card">
                     <div class="detail-title">Buyer</div>
                     <div class="detail-value" id="buyerAddress">
-                        0x0000...0000 <span class="role-badge badge-buyer">You</span>
+                        0x0000...0000
                     </div>
                 </div>
                 <div class="detail-card">
                     <div class="detail-title">Seller</div>
                     <div class="detail-value" id="sellerAddress">
-                        0x0000...0000 <span class="role-badge badge-seller">You</span>
+                        0x0000...0000
                     </div>
                 </div>
                 <div class="detail-card">
                     <div class="detail-title">Arbiter</div>
                     <div class="detail-value" id="arbiterAddress">
-                        0x0000...0000 <span class="role-badge badge-arbiter">You</span>
+                        0x0000...0000
                     </div>
                 </div>
                 <div class="detail-card">
@@ -529,38 +598,7 @@
             
             <h3 style="margin-bottom: 25px; font-size: 1.5rem; color: #d0d0ff;">Available Actions</h3>
             <div class="actions-grid" id="actionsGrid">
-                <div class="action-card">
-                    <div class="action-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="action-title">Deposit Funds</div>
-                    <div class="action-desc">Fund the escrow to start the transaction</div>
-                    <button class="btn" id="depositBtn">
-                        <i class="fas fa-coins"></i> Deposit ETH
-                    </button>
-                </div>
-                
-                <div class="action-card">
-                    <div class="action-icon">
-                        <i class="fas fa-truck"></i>
-                    </div>
-                    <div class="action-title">Mark as Delivered</div>
-                    <div class="action-desc">Confirm that the item/service has been delivered</div>
-                    <button class="btn btn-success" id="markDeliveredBtn">
-                        <i class="fas fa-check"></i> Confirm Delivery
-                    </button>
-                </div>
-                
-                <div class="action-card">
-                    <div class="action-icon">
-                        <i class="fas fa-gavel"></i>
-                    </div>
-                    <div class="action-title">Raise Dispute</div>
-                    <div class="action-desc">Initiate a dispute for the arbiter to resolve</div>
-                    <button class="btn btn-warning" id="raiseDisputeBtn">
-                        <i class="fas fa-exclamation-triangle"></i> Raise Dispute
-                    </button>
-                </div>
+                <!-- Actions will be populated dynamically -->
             </div>
         </div>
         
@@ -583,7 +621,165 @@
         </div>
     </div>
     
+    <!-- Deposit Modal -->
+    <div class="modal" id="depositModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeDepositModal">&times;</span>
+            <h3 class="modal-title">Deposit Funds</h3>
+            <div class="form-group">
+                <label for="depositAmount">Amount (ETH)</label>
+                <input type="number" id="depositAmount" min="0.001" step="0.001" placeholder="Enter ETH amount" value="1.5">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="confirmDepositBtn">Deposit</button>
+                <button class="btn btn-danger" id="cancelDepositBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resolve Dispute Modal -->
+    <div class="modal" id="resolveModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeResolveModal">&times;</span>
+            <h3 class="modal-title">Resolve Dispute</h3>
+            <p style="margin-bottom: 20px;">Who should receive the escrowed funds?</p>
+            <div class="modal-actions">
+                <button class="btn btn-success" id="awardSellerBtn">Award to Seller</button>
+                <button class="btn btn-danger" id="awardBuyerBtn">Award to Buyer</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
+        // Contract ABI - Based on your smart contract
+        const contractABI = [
+            {
+                "inputs": [
+                    {"internalType": "address","name": "_seller","type": "address"},
+                    {"internalType": "address","name": "_arbiter","type": "address"}
+                ],
+                "stateMutability": "payable",
+                "type": "constructor"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {"indexed": true,"internalType": "address","name": "buyer","type": "address"},
+                    {"indexed": false,"internalType": "uint256","name": "amount","type": "uint256"}
+                ],
+                "name": "FundsDeposited",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {"indexed": true,"internalType": "address","name": "seller","type": "address"}
+                ],
+                "name": "DeliveryMarked",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {"indexed": true,"internalType": "address","name": "buyer","type": "address"}
+                ],
+                "name": "DeliveryConfirmed",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {"indexed": true,"internalType": "address","name": "party","type": "address"}
+                ],
+                "name": "DisputeRaised",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {"indexed": true,"internalType": "address","name": "arbiter","type": "address"},
+                    {"indexed": false,"internalType": "bool","name": "sellerAwarded","type": "bool"}
+                ],
+                "name": "Resolved",
+                "type": "event"
+            },
+            {
+                "inputs": [],
+                "name": "deposit",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "markDelivered",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "confirmDelivery",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "raiseDispute",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "bool","name": "toSeller","type": "bool"}
+                ],
+                "name": "resolveDispute",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "amount",
+                "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "arbiter",
+                "outputs": [{"internalType": "address","name": "","type": "address"}],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "buyer",
+                "outputs": [{"internalType": "address","name": "","type": "address"}],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "seller",
+                "outputs": [{"internalType": "address","name": "","type": "address"}],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "state",
+                "outputs": [{"internalType": "enum Custodia.State","name": "","type": "uint8"}],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+        
+        // Contract address - Replace with your deployed contract address
+        const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+        
         // DOM Elements
         const connectWalletBtn = document.getElementById('connectWalletBtn');
         const walletAddressEl = document.getElementById('walletAddress');
@@ -591,106 +787,98 @@
         const sellerAddressEl = document.getElementById('sellerAddress');
         const arbiterAddressEl = document.getElementById('arbiterAddress');
         const escrowAmountEl = document.getElementById('escrowAmount');
-        const statusMessage = document.getElementById('statusMessage');
-        const depositBtn = document.getElementById('depositBtn');
-        const markDeliveredBtn = document.getElementById('markDeliveredBtn');
-        const raiseDisputeBtn = document.getElementById('raiseDisputeBtn');
+        const actionsGrid = document.getElementById('actionsGrid');
         const eventsLog = document.getElementById('eventsLog');
+        const statusMessage = document.getElementById('statusMessage');
         const stateItems = document.querySelectorAll('.state-item');
-
+        
+        // Modal elements
+        const depositModal = document.getElementById('depositModal');
+        const resolveModal = document.getElementById('resolveModal');
+        const depositAmountInput = document.getElementById('depositAmount');
+        const confirmDepositBtn = document.getElementById('confirmDepositBtn');
+        const cancelDepositBtn = document.getElementById('cancelDepositBtn');
+        const awardSellerBtn = document.getElementById('awardSellerBtn');
+        const awardBuyerBtn = document.getElementById('awardBuyerBtn');
+        
         // Global variables
-        let userAddress = '';
+        let provider;
+        let signer;
+        let contract;
+        let userAddress;
+        let contractState = 0; // Created
+        let contractAmount = 0;
         
         // Initialize
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             // Check if MetaMask is installed
             if (typeof window.ethereum !== 'undefined') {
-                // Try to connect automatically if previously connected
-                checkConnectedWallet();
+                await initApp();
             } else {
                 showStatus('Please install MetaMask to use this dApp!', 'error');
                 connectWalletBtn.disabled = true;
             }
         });
         
-        // Check if wallet is already connected
-        async function checkConnectedWallet() {
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length > 0) {
-                    userAddress = accounts[0];
-                    updateWalletUI();
-                    showStatus('Wallet connected successfully!', 'success');
-                }
-            } catch (error) {
-                console.error('Error checking connected wallet:', error);
-            }
-        }
-        
         // Connect Wallet
-        connectWalletBtn.addEventListener('click', connectWallet);
-        
-        // Connect Wallet Function
-        async function connectWallet() {
+        connectWalletBtn.addEventListener('click', async () => {
             try {
-                if (typeof window.ethereum === 'undefined') {
-                    showStatus('No Ethereum wallet detected. Please install MetaMask.', 'error');
-                    return;
-                }
-                
                 // Request account access
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                
-                // Update user address
-                userAddress = accounts[0];
-                
-                // Update UI
-                updateWalletUI();
-                
-                // Show success message
-                showStatus('Wallet connected successfully! You can now interact with the escrow contract.', 'success');
-                
-                // Simulate contract data loading
-                setTimeout(loadContractData, 1000);
-                
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                await initApp();
             } catch (error) {
-                console.error('Wallet connection error:', error);
+                console.error('Error connecting wallet:', error);
                 showStatus('Error connecting wallet: ' + error.message, 'error');
             }
-        }
+        });
         
-        // Update wallet UI
-        function updateWalletUI() {
-            walletAddressEl.textContent = shortenAddress(userAddress);
-            connectWalletBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+        // Initialize application
+        async function initApp() {
+            try {
+                // Create ethers provider and signer
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                
+                // Update wallet UI
+                walletAddressEl.textContent = shortenAddress(userAddress);
+                connectWalletBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+                
+                // Create contract instance
+                contract = new ethers.Contract(contractAddress, contractABI, signer);
+                
+                // Load contract data
+                await loadContractData();
+                
+                // Set up event listeners
+                setupEventListeners();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showStatus('Initialization error: ' + error.message, 'error');
+            }
         }
         
         // Load contract data
-        function loadContractData() {
+        async function loadContractData() {
             try {
-                // Simulate data for demo
-                const buyer = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
-                const seller = "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B";
-                const arbiter = "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5";
-                const amount = "1.5";
+                // Get contract details
+                const buyer = await contract.buyer();
+                const seller = await contract.seller();
+                const arbiter = await contract.arbiter();
+                contractAmount = await contract.amount();
+                contractState = await contract.state();
                 
                 // Update UI
                 buyerAddressEl.innerHTML = `${shortenAddress(buyer)} ${buyer === userAddress ? '<span class="role-badge badge-buyer">You</span>' : ''}`;
                 sellerAddressEl.innerHTML = `${shortenAddress(seller)} ${seller === userAddress ? '<span class="role-badge badge-seller">You</span>' : ''}`;
                 arbiterAddressEl.innerHTML = `${shortenAddress(arbiter)} ${arbiter === userAddress ? '<span class="role-badge badge-arbiter">You</span>' : ''}`;
-                escrowAmountEl.textContent = `${amount} ETH`;
+                escrowAmountEl.textContent = `${ethers.utils.formatEther(contractAmount)} ETH`;
                 
-                // Set state to Funded for demo
-                updateStateVisualization(1);
+                // Update state visualization
+                updateStateVisualization();
                 
-                // Add deposit event
-                addEvent(
-                    'Funds Deposited',
-                    'fas fa-money-bill-wave',
-                    `${shortenAddress(userAddress)} deposited ${amount} ETH`,
-                    new Date()
-                );
-                
+                // Update available actions
+                updateAvailableActions();
             } catch (error) {
                 console.error('Error loading contract data:', error);
                 showStatus('Error loading contract data: ' + error.message, 'error');
@@ -698,21 +886,264 @@
         }
         
         // Update state visualization
-        function updateStateVisualization(state) {
+        function updateStateVisualization() {
             // Reset all states
             stateItems.forEach(item => {
                 item.classList.remove('active', 'completed');
             });
             
             // Mark completed states
-            for (let i = 0; i < state; i++) {
+            for (let i = 0; i < contractState; i++) {
                 const stateItem = document.querySelector(`.state-item[data-state="${i}"]`);
                 if (stateItem) stateItem.classList.add('completed');
             }
             
             // Mark active state
-            const activeStateItem = document.querySelector(`.state-item[data-state="${state}"]`);
+            const activeStateItem = document.querySelector(`.state-item[data-state="${contractState}"]`);
             if (activeStateItem) activeStateItem.classList.add('active');
+        }
+        
+        // Update available actions based on state and user role
+        async function updateAvailableActions() {
+            // Clear previous actions
+            actionsGrid.innerHTML = '';
+            
+            // Get user role
+            const isBuyer = userAddress === await contract.buyer();
+            const isSeller = userAddress === await contract.seller();
+            const isArbiter = userAddress === await contract.arbiter();
+            
+            // Add actions based on current state
+            switch(contractState) {
+                case 0: // Created
+                    if (isBuyer) {
+                        addAction(
+                            'Deposit Funds', 
+                            'fas fa-money-bill-wave', 
+                            'Fund the escrow to start the transaction', 
+                            () => showModal(depositModal)
+                        );
+                    }
+                    break;
+                    
+                case 1: // Funded
+                    if (isSeller) {
+                        addAction(
+                            'Mark as Delivered', 
+                            'fas fa-truck', 
+                            'Confirm that the item/service has been delivered', 
+                            markDelivered
+                        );
+                    }
+                    
+                    if (isBuyer || isSeller) {
+                        addAction(
+                            'Raise Dispute', 
+                            'fas fa-gavel', 
+                            'Initiate a dispute for the arbiter to resolve', 
+                            raiseDispute
+                        );
+                    }
+                    break;
+                    
+                case 2: // Delivered
+                    if (isBuyer) {
+                        addAction(
+                            'Confirm Delivery', 
+                            'fas fa-check-circle', 
+                            'Release funds to the seller', 
+                            confirmDelivery
+                        );
+                    }
+                    break;
+                    
+                case 4: // Disputed
+                    if (isArbiter) {
+                        addAction(
+                            'Resolve Dispute', 
+                            'fas fa-balance-scale', 
+                            'Decide the outcome of the dispute', 
+                            () => showModal(resolveModal)
+                        );
+                    }
+                    break;
+                    
+                default:
+                    addAction(
+                        'Transaction Complete', 
+                        'fas fa-check', 
+                        'This escrow transaction has been completed', 
+                        null,
+                        true
+                    );
+            }
+        }
+        
+        // Add an action card to the UI
+        function addAction(title, icon, description, handler, disabled = false) {
+            const actionCard = document.createElement('div');
+            actionCard.className = 'action-card';
+            actionCard.innerHTML = `
+                <div class="action-icon">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="action-title">${title}</div>
+                <div class="action-desc">${description}</div>
+                <button class="btn ${disabled ? 'btn-disabled' : ''}" ${disabled ? 'disabled' : ''}>
+                    ${title}
+                </button>
+            `;
+            
+            if (!disabled && handler) {
+                const actionBtn = actionCard.querySelector('button');
+                actionBtn.addEventListener('click', handler);
+            }
+            
+            actionsGrid.appendChild(actionCard);
+        }
+        
+        // Contract interaction functions
+        async function depositFunds() {
+            try {
+                const amount = depositAmountInput.value;
+                if (!amount || parseFloat(amount) <= 0) {
+                    showStatus('Please enter a valid amount', 'error');
+                    return;
+                }
+                
+                const amountWei = ethers.utils.parseEther(amount);
+                showStatus('Processing deposit transaction...');
+                
+                const tx = await contract.deposit({ value: amountWei });
+                await tx.wait();
+                
+                showStatus('Deposit successful! Funds added to escrow.', 'success');
+                await loadContractData();
+                closeModal(depositModal);
+            } catch (error) {
+                console.error('Deposit error:', error);
+                showStatus('Deposit failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function markDelivered() {
+            try {
+                showStatus('Marking as delivered...');
+                const tx = await contract.markDelivered();
+                await tx.wait();
+                
+                showStatus('Item/service marked as delivered!', 'success');
+                await loadContractData();
+            } catch (error) {
+                console.error('Mark delivered error:', error);
+                showStatus('Error marking delivered: ' + error.message, 'error');
+            }
+        }
+        
+        async function confirmDelivery() {
+            try {
+                showStatus('Confirming delivery...');
+                const tx = await contract.confirmDelivery();
+                await tx.wait();
+                
+                showStatus('Delivery confirmed! Funds released to seller.', 'success');
+                await loadContractData();
+            } catch (error) {
+                console.error('Confirm delivery error:', error);
+                showStatus('Error confirming delivery: ' + error.message, 'error');
+            }
+        }
+        
+        async function raiseDispute() {
+            try {
+                showStatus('Raising dispute...');
+                const tx = await contract.raiseDispute();
+                await tx.wait();
+                
+                showStatus('Dispute raised! Waiting for arbiter resolution.', 'success');
+                await loadContractData();
+            } catch (error) {
+                console.error('Raise dispute error:', error);
+                showStatus('Error raising dispute: ' + error.message, 'error');
+            }
+        }
+        
+        async function resolveDispute(awardToSeller) {
+            try {
+                showStatus('Resolving dispute...');
+                const tx = await contract.resolveDispute(awardToSeller);
+                await tx.wait();
+                
+                const recipient = awardToSeller ? 'seller' : 'buyer';
+                showStatus(`Dispute resolved! Funds awarded to ${recipient}.`, 'success');
+                await loadContractData();
+                closeModal(resolveModal);
+            } catch (error) {
+                console.error('Resolve dispute error:', error);
+                showStatus('Error resolving dispute: ' + error.message, 'error');
+            }
+        }
+        
+        // Event listeners setup
+        function setupEventListeners() {
+            // Modal controls
+            document.getElementById('closeDepositModal').addEventListener('click', () => closeModal(depositModal));
+            document.getElementById('closeResolveModal').addEventListener('click', () => closeModal(resolveModal));
+            cancelDepositBtn.addEventListener('click', () => closeModal(depositModal));
+            
+            // Deposit button
+            confirmDepositBtn.addEventListener('click', depositFunds);
+            
+            // Resolve dispute buttons
+            awardSellerBtn.addEventListener('click', () => resolveDispute(true));
+            awardBuyerBtn.addEventListener('click', () => resolveDispute(false));
+            
+            // Contract events
+            contract.on('FundsDeposited', (buyer, amount) => {
+                addEvent(
+                    'Funds Deposited',
+                    'fas fa-money-bill-wave',
+                    `${shortenAddress(buyer)} deposited ${ethers.utils.formatEther(amount)} ETH`,
+                    new Date()
+                );
+            });
+            
+            contract.on('DeliveryMarked', (seller) => {
+                addEvent(
+                    'Item Delivered',
+                    'fas fa-truck',
+                    `${shortenAddress(seller)} marked the item as delivered`,
+                    new Date()
+                );
+            });
+            
+            contract.on('DeliveryConfirmed', (buyer) => {
+                addEvent(
+                    'Delivery Confirmed',
+                    'fas fa-check-circle',
+                    `${shortenAddress(buyer)} confirmed delivery and released funds`,
+                    new Date()
+                );
+            });
+            
+            contract.on('DisputeRaised', (party) => {
+                addEvent(
+                    'Dispute Raised',
+                    'fas fa-gavel',
+                    `${shortenAddress(party)} raised a dispute`,
+                    new Date()
+                );
+            });
+            
+            contract.on('Resolved', (arbiter, sellerAwarded) => {
+                const recipient = sellerAwarded ? 'Seller' : 'Buyer';
+                addEvent(
+                    'Dispute Resolved',
+                    'fas fa-balance-scale',
+                    `${shortenAddress(arbiter)} resolved the dispute in favor of ${recipient}`,
+                    new Date()
+                );
+            });
         }
         
         // Add event to log
@@ -745,8 +1176,7 @@
             const statusDiv = document.createElement('div');
             statusDiv.className = `status-message status-${type}`;
             statusDiv.innerHTML = `
-                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 
-                                      type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
                 <span>${message}</span>
             `;
             
@@ -760,54 +1190,14 @@
             }
         }
         
-        // Button click handlers
-        depositBtn.addEventListener('click', async () => {
-            showStatus('Processing deposit transaction...', 'info');
-            
-            // Simulate transaction delay
-            setTimeout(() => {
-                addEvent(
-                    'Funds Deposited',
-                    'fas fa-money-bill-wave',
-                    `${shortenAddress(userAddress)} deposited 1.5 ETH`,
-                    new Date()
-                );
-                updateStateVisualization(1);
-                showStatus('Deposit successful! 1.5 ETH added to escrow.', 'success');
-            }, 2000);
-        });
+        // Modal functions
+        function showModal(modal) {
+            modal.style.display = 'flex';
+        }
         
-        markDeliveredBtn.addEventListener('click', async () => {
-            showStatus('Processing delivery confirmation...', 'info');
-            
-            // Simulate transaction delay
-            setTimeout(() => {
-                addEvent(
-                    'Item Delivered',
-                    'fas fa-truck',
-                    `${shortenAddress(userAddress)} marked the item as delivered`,
-                    new Date()
-                );
-                updateStateVisualization(2);
-                showStatus('Item successfully marked as delivered!', 'success');
-            }, 2000);
-        });
-        
-        raiseDisputeBtn.addEventListener('click', async () => {
-            showStatus('Raising dispute...', 'info');
-            
-            // Simulate transaction delay
-            setTimeout(() => {
-                addEvent(
-                    'Dispute Raised',
-                    'fas fa-gavel',
-                    `${shortenAddress(userAddress)} raised a dispute`,
-                    new Date()
-                );
-                updateStateVisualization(4);
-                showStatus('Dispute raised! Waiting for arbiter resolution.', 'success');
-            }, 2000);
-        });
+        function closeModal(modal) {
+            modal.style.display = 'none';
+        }
         
         // Helper functions
         function shortenAddress(address) {
