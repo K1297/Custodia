@@ -46,18 +46,17 @@
         }
         
         h1 {
-            font-size: 3.2rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
             background: linear-gradient(to right, #ff7e5f, #feb47b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
             font-weight: 800;
             letter-spacing: -0.5px;
         }
         
         .subtitle {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             opacity: 0.85;
             max-width: 600px;
             margin: 0 auto 25px;
@@ -73,12 +72,6 @@
             border: 1px solid var(--card-border);
             padding: 30px;
             margin-bottom: 30px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
         
         .card-header {
@@ -185,8 +178,8 @@
         }
         
         .state-icon {
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -195,7 +188,7 @@
             background: var(--dark);
             border: 3px solid rgba(255,255,255,0.2);
             transition: all 0.4s ease;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
         }
         
         .state-item.active .state-icon {
@@ -211,7 +204,7 @@
         
         .state-label {
             text-align: center;
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 500;
             color: #d0d0ff;
         }
@@ -228,12 +221,6 @@
             border-radius: 15px;
             padding: 25px;
             border: 1px solid rgba(106, 17, 203, 0.2);
-            transition: transform 0.3s ease;
-        }
-        
-        .detail-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(106, 17, 203, 0.4);
         }
         
         .detail-title {
@@ -259,6 +246,7 @@
             font-size: 0.85rem;
             font-weight: 600;
             background: rgba(255,255,255,0.1);
+            margin-left: 10px;
         }
         
         .badge-buyer {
@@ -286,18 +274,11 @@
             padding: 25px;
             border-radius: 15px;
             background: rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
             border: 1px solid rgba(106, 17, 203, 0.2);
         }
         
-        .action-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(106, 17, 203, 0.4);
-            background: rgba(0,0,0,0.25);
-        }
-        
         .action-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 20px;
             text-align: center;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -333,14 +314,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
-            animation: fadeIn 0.5s ease;
             border-left: 4px solid var(--primary);
-            transition: all 0.3s ease;
-        }
-        
-        .event-item:hover {
-            background: rgba(0,0,0,0.25);
-            transform: translateX(5px);
         }
         
         .event-icon {
@@ -375,11 +349,6 @@
             opacity: 0.6;
             text-align: right;
             min-width: 80px;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         
         .status-message {
@@ -461,7 +430,12 @@
             }
             
             h1 {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.95rem;
             }
         }
     </style>
@@ -610,135 +584,6 @@
     </div>
     
     <script>
-        // Contract ABI - Simplified for this demo
-        const contractABI = [
-            {
-                "inputs": [
-                    {"internalType": "address","name": "_seller","type": "address"},
-                    {"internalType": "address","name": "_arbiter","type": "address"}
-                ],
-                "stateMutability": "payable",
-                "type": "constructor"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {"indexed": true,"internalType": "address","name": "buyer","type": "address"},
-                    {"indexed": false,"internalType": "uint256","name": "amount","type": "uint256"}
-                ],
-                "name": "FundsDeposited",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {"indexed": true,"internalType": "address","name": "seller","type": "address"}
-                ],
-                "name": "DeliveryMarked",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {"indexed": true,"internalType": "address","name": "buyer","type": "address"}
-                ],
-                "name": "DeliveryConfirmed",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {"indexed": true,"internalType": "address","name": "party","type": "address"}
-                ],
-                "name": "DisputeRaised",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {"indexed": true,"internalType": "address","name": "arbiter","type": "address"},
-                    {"indexed": false,"internalType": "bool","name": "sellerAwarded","type": "bool"}
-                ],
-                "name": "Resolved",
-                "type": "event"
-            },
-            {
-                "inputs": [],
-                "name": "deposit",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "markDelivered",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "confirmDelivery",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "raiseDispute",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {"internalType": "bool","name": "toSeller","type": "bool"}
-                ],
-                "name": "resolveDispute",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "amount",
-                "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "arbiter",
-                "outputs": [{"internalType": "address","name": "","type": "address"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "buyer",
-                "outputs": [{"internalType": "address","name": "","type": "address"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "seller",
-                "outputs": [{"internalType": "address","name": "","type": "address"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "state",
-                "outputs": [{"internalType": "enum Custodia.State","name": "","type": "uint8"}],
-                "stateMutability": "view",
-                "type": "function"
-            }
-        ];
-        
-        // Contract address - Replace with your deployed contract address
-        const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-        
         // DOM Elements
         const connectWalletBtn = document.getElementById('connectWalletBtn');
         const walletAddressEl = document.getElementById('walletAddress');
@@ -746,33 +591,41 @@
         const sellerAddressEl = document.getElementById('sellerAddress');
         const arbiterAddressEl = document.getElementById('arbiterAddress');
         const escrowAmountEl = document.getElementById('escrowAmount');
-        const actionsGrid = document.getElementById('actionsGrid');
-        const eventsLog = document.getElementById('eventsLog');
         const statusMessage = document.getElementById('statusMessage');
         const depositBtn = document.getElementById('depositBtn');
         const markDeliveredBtn = document.getElementById('markDeliveredBtn');
         const raiseDisputeBtn = document.getElementById('raiseDisputeBtn');
-        
+        const eventsLog = document.getElementById('eventsLog');
+        const stateItems = document.querySelectorAll('.state-item');
+
         // Global variables
-        let provider;
-        let signer;
-        let contract;
-        let userAddress;
+        let userAddress = '';
         
         // Initialize
-        window.addEventListener('load', async () => {
+        window.addEventListener('load', () => {
             // Check if MetaMask is installed
             if (typeof window.ethereum !== 'undefined') {
                 // Try to connect automatically if previously connected
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length > 0) {
-                    await connectWallet();
-                }
+                checkConnectedWallet();
             } else {
                 showStatus('Please install MetaMask to use this dApp!', 'error');
                 connectWalletBtn.disabled = true;
             }
         });
+        
+        // Check if wallet is already connected
+        async function checkConnectedWallet() {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length > 0) {
+                    userAddress = accounts[0];
+                    updateWalletUI();
+                    showStatus('Wallet connected successfully!', 'success');
+                }
+            } catch (error) {
+                console.error('Error checking connected wallet:', error);
+            }
+        }
         
         // Connect Wallet
         connectWalletBtn.addEventListener('click', connectWallet);
@@ -781,35 +634,24 @@
         async function connectWallet() {
             try {
                 if (typeof window.ethereum === 'undefined') {
-                    showStatus('No Ethereum wallet detected. Please install MetaMask or use Brave browser.', 'error');
+                    showStatus('No Ethereum wallet detected. Please install MetaMask.', 'error');
                     return;
                 }
                 
-                // Create ethers provider
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                
                 // Request account access
-                const accounts = await provider.send("eth_requestAccounts", []);
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 
-                // Get signer
-                signer = provider.getSigner();
-                userAddress = await signer.getAddress();
+                // Update user address
+                userAddress = accounts[0];
                 
                 // Update UI
-                walletAddressEl.textContent = shortenAddress(userAddress);
-                connectWalletBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
-                
-                // Create contract instance
-                contract = new ethers.Contract(contractAddress, contractABI, signer);
-                
-                // Load contract data
-                await loadContractData();
-                
-                // Simulate contract events for demo
-                simulateContractEvents();
+                updateWalletUI();
                 
                 // Show success message
                 showStatus('Wallet connected successfully! You can now interact with the escrow contract.', 'success');
+                
+                // Simulate contract data loading
+                setTimeout(loadContractData, 1000);
                 
             } catch (error) {
                 console.error('Wallet connection error:', error);
@@ -817,23 +659,37 @@
             }
         }
         
+        // Update wallet UI
+        function updateWalletUI() {
+            walletAddressEl.textContent = shortenAddress(userAddress);
+            connectWalletBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+        }
+        
         // Load contract data
-        async function loadContractData() {
+        function loadContractData() {
             try {
                 // Simulate data for demo
                 const buyer = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
                 const seller = "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B";
                 const arbiter = "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5";
-                const amount = ethers.utils.parseEther("1.5");
+                const amount = "1.5";
                 
                 // Update UI
                 buyerAddressEl.innerHTML = `${shortenAddress(buyer)} ${buyer === userAddress ? '<span class="role-badge badge-buyer">You</span>' : ''}`;
                 sellerAddressEl.innerHTML = `${shortenAddress(seller)} ${seller === userAddress ? '<span class="role-badge badge-seller">You</span>' : ''}`;
                 arbiterAddressEl.innerHTML = `${shortenAddress(arbiter)} ${arbiter === userAddress ? '<span class="role-badge badge-arbiter">You</span>' : ''}`;
-                escrowAmountEl.textContent = `${ethers.utils.formatEther(amount)} ETH`;
+                escrowAmountEl.textContent = `${amount} ETH`;
                 
                 // Set state to Funded for demo
                 updateStateVisualization(1);
+                
+                // Add deposit event
+                addEvent(
+                    'Funds Deposited',
+                    'fas fa-money-bill-wave',
+                    `${shortenAddress(userAddress)} deposited ${amount} ETH`,
+                    new Date()
+                );
                 
             } catch (error) {
                 console.error('Error loading contract data:', error);
@@ -843,8 +699,6 @@
         
         // Update state visualization
         function updateStateVisualization(state) {
-            const stateItems = document.querySelectorAll('.state-item');
-            
             // Reset all states
             stateItems.forEach(item => {
                 item.classList.remove('active', 'completed');
@@ -859,30 +713,6 @@
             // Mark active state
             const activeStateItem = document.querySelector(`.state-item[data-state="${state}"]`);
             if (activeStateItem) activeStateItem.classList.add('active');
-        }
-        
-        // Simulate contract events for demo
-        function simulateContractEvents() {
-            // Simulate deposit event
-            setTimeout(() => {
-                addEvent(
-                    'Funds Deposited',
-                    'fas fa-money-bill-wave',
-                    `${shortenAddress(userAddress)} deposited 1.5 ETH`,
-                    new Date()
-                );
-            }, 2000);
-            
-            // Simulate delivery marked event
-            setTimeout(() => {
-                addEvent(
-                    'Item Delivered',
-                    'fas fa-truck',
-                    `${shortenAddress("0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B")} marked the item as delivered`,
-                    new Date()
-                );
-                updateStateVisualization(2);
-            }, 5000);
         }
         
         // Add event to log
