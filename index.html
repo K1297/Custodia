@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Custodia Escrow</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
@@ -64,8 +64,8 @@
 
     const contractAddress = "0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22"; // Your Sepolia contract
 
-    const abi = [ // Minimal ABI for interaction
-      
+    const abi = [
+      [
 	{
 		"anonymous": false,
 		"inputs": [
@@ -423,7 +423,7 @@
 		"stateMutability": "view",
 		"type": "function"
 	}
-
+]
     ];
 
     async function connectWallet() {
@@ -452,7 +452,7 @@
         document.getElementById('connectWalletBtn').disabled = true;
 
         contract = new ethers.Contract(contractAddress, abi, signer);
-        console.log("Contract loaded:", contract);
+        console.log("Contract ready:", contract);
       } catch (error) {
         console.error("Wallet connection error:", error);
         alert('Connection failed: ' + (error.message || error));
