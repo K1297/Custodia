@@ -26,31 +26,31 @@ Custodia is a decentralized escrow platform built on Ethereum that provides secu
 
 **Create new escrow agreement**
 
-'function createEscrow(address _seller, address _arbiter) external returns (uint256)'
+`function createEscrow(address _seller, address _arbiter) external returns (uint256)`
 
 **Deposit funds to escrow**
 
-'function deposit(uint256 escrowId) external payable'
+`function deposit(uint256 escrowId) external payable`
 
 **Seller marks goods as delivered**
 
-'function markDelivered(uint256 escrowId) external'
+`function markDelivered(uint256 escrowId) external`
 
 **Buyer confirms delivery**
 
-'function confirmDelivery(uint256 escrowId) external'
+`function confirmDelivery(uint256 escrowId) external`
 
 **Raise dispute**
 
-'function raiseDispute(uint256 escrowId) external'
+`function raiseDispute(uint256 escrowId) external`
 
 **Arbiter resolves dispute**
 
-'function resolveDispute(uint256 escrowId, bool toSeller) external'
+`function resolveDispute(uint256 escrowId, bool toSeller) external`
 
 ## Contract Address
 
-**Sepolia Testnet:** '0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22'
+**Sepolia Testnet:** `0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22`
 
 ## Team Members 
 
