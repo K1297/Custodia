@@ -4,47 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Custodia Frontend</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa; }
+    .wallet-info { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .wallet-address { font-weight: bold; }
+    .btn { padding: 8px 14px; cursor: pointer; background: #333; color: white; border: none; border-radius: 5px; }
+    input, select { margin: 4px 0; padding: 6px; width: 300px; max-width: 100%; }
+    h3 { margin-top: 30px; }
+    hr { margin-top: 30px; }
+  </style>
 </head>
 <body>
-  <h2>Custodia Escrow Interface</h2>
 
-  <button onclick="connectWallet()">Connect Wallet</button>
-  <p id="walletAddress"></p>
-
-  <hr/>
+  <!-- Brave Wallet Connection Button -->
+  <div class="wallet-info">
+    <div class="wallet-address" id="walletAddress">Not connected</div>
+    <button class="btn" id="connectWalletBtn">
+      <i class="fas fa-wallet"></i> Connect Wallet
+    </button>
+  </div>
 
   <h3>Create Escrow</h3>
   Seller: <input type="text" id="seller" placeholder="0x..."><br/>
   Arbiter: <input type="text" id="arbiter" placeholder="0x..."><br/>
-  <button onclick="createEscrow()">Create</button><br/>
+  <button class="btn" onclick="createEscrow()">Create</button><br/>
   <p id="escrowIdResult"></p>
-
-  <hr/>
 
   <h3>Deposit to Escrow</h3>
   Escrow ID: <input type="number" id="depositId"><br/>
   Amount (ETH): <input type="number" id="depositAmount"><br/>
-  <button onclick="deposit()">Deposit</button>
-
-  <hr/>
+  <button class="btn" onclick="deposit()">Deposit</button>
 
   <h3>Mark Delivered</h3>
   Escrow ID: <input type="number" id="deliveredId"><br/>
-  <button onclick="markDelivered()">Mark Delivered</button>
-
-  <hr/>
+  <button class="btn" onclick="markDelivered()">Mark Delivered</button>
 
   <h3>Confirm Delivery</h3>
   Escrow ID: <input type="number" id="confirmId"><br/>
-  <button onclick="confirmDelivery()">Confirm</button>
-
-  <hr/>
+  <button class="btn" onclick="confirmDelivery()">Confirm</button>
 
   <h3>Raise Dispute</h3>
   Escrow ID: <input type="number" id="disputeId"><br/>
-  <button onclick="raiseDispute()">Raise Dispute</button>
-
-  <hr/>
+  <button class="btn" onclick="raiseDispute()">Raise Dispute</button>
 
   <h3>Resolve Dispute</h3>
   Escrow ID: <input type="number" id="resolveId"><br/>
@@ -53,12 +56,13 @@
     <option value="true">Yes</option>
     <option value="false">No</option>
   </select><br/>
-  <button onclick="resolveDispute()">Resolve</button>
+  <button class="btn" onclick="resolveDispute()">Resolve</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <script>
+    let currentAccount = null;
     let provider, signer, contract;
-    const contractAddress = "0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22"; // Replace with deployed address
+
+    const contractAddress = "0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22"; // 🔁 Replace with your deployed contract address
     const abi = [
       
 	{
@@ -422,12 +426,29 @@
     ];
 
     async function connectWallet() {
-      provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      signer = provider.getSigner();
-      contract = new ethers.Contract(contractAddress, abi, signer);
-      const address = await signer.getAddress();
-      document.getElementById("walletAddress").innerText = "Connected: " + address;
+      if (typeof window.ethereum === 'undefined') {
+        alert('No wallet found. Please install Brave Wallet or MetaMask.');
+        return;
+      }
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        currentAccount = accounts[0];
+
+        document.getElementById('walletAddress').textContent =
+          `Connected: ${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
+
+        document.getElementById('connectWalletBtn').innerHTML =
+          '<i class="fas fa-check-circle"></i> Connected';
+        document.getElementById('connectWalletBtn').disabled = true;
+
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        contract = new ethers.Contract(contractAddress, abi, signer);
+      } catch (error) {
+        console.error(error);
+        alert('Connection failed.');
+      }
     }
 
     async function createEscrow() {
@@ -458,7 +479,7 @@
       const id = document.getElementById("confirmId").value;
       const tx = await contract.confirmDelivery(id);
       await tx.wait();
-      alert("Delivery confirmed and payment released");
+      alert("Delivery confirmed");
     }
 
     async function raiseDispute() {
@@ -475,6 +496,8 @@
       await tx.wait();
       alert("Dispute resolved");
     }
+
+    document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
   </script>
 </body>
 </html>
