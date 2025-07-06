@@ -6,57 +6,352 @@
   <title>Custodia Escrow</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+  <link
+    rel="stylesheet"
+    as="style"
+    onload="this.rel='stylesheet'"
+    href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Public+Sans%3Awght%40400%3B500%3B700%3B900"
+  />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    .wallet-info { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-    .wallet-address { font-weight: bold; }
-    .btn { padding: 8px 14px; cursor: pointer; background: #333; color: white; border: none; border-radius: 5px; }
-    input, select { margin: 4px 0; padding: 6px; width: 300px; max-width: 100%; }
-    h3 { margin-top: 30px; }
-    hr { margin: 30px 0; }
+    .dapp-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .dapp-section h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #121416;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #6a7681;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #dde1e3;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .btn-dapp {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-dapp:hover {
+      background: #4338ca;
+    }
+    .wallet-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .wallet-address {
+      font-size: 14px;
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .result-message {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .error {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .dapp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
   </style>
 </head>
-<body>
+<body class="bg-[#f9f9f9]" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+  <div class="flex flex-col min-h-screen">
+    <header class="flex items-center justify-between border-b border-solid border-b-[#f1f2f4] px-6 py-3 md:px-10">
+      <div class="flex items-center gap-4 text-[#121416]">
+        <div class="size-4">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z"
+              fill="currentColor"
+            ></path>
+          </svg>
+        </div>
+        <h2 class="text-[#121416] text-lg font-bold leading-tight tracking-[-0.015em]">Custodia</h2>
+      </div>
+      <div class="flex flex-1 justify-end gap-8">
+        <div class="flex items-center gap-9">
+          <a class="text-[#121416] text-sm font-medium leading-normal" href="#features">Features</a>
+          <a class="text-[#121416] text-sm font-medium leading-normal" href="#how-it-works">How It Works</a>
+          <a class="text-[#121416] text-sm font-medium leading-normal" href="#dashboard">Dashboard</a>
+        </div>
+        <div class="wallet-info">
+          <div class="wallet-address" id="walletAddress">Not connected</div>
+          <button
+            id="connectWalletBtn"
+            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-[#dce8f3] text-[#121416] text-sm font-bold leading-normal tracking-[0.015em]"
+          >
+            <i class="fas fa-wallet"></i> Connect Wallet
+          </button>
+        </div>
+      </div>
+    </header>
 
-  <!-- Wallet Connect -->
-  <div class="wallet-info">
-    <div class="wallet-address" id="walletAddress">Not connected</div>
-    <button class="btn" id="connectWalletBtn">
-      <i class="fas fa-wallet"></i> Connect Wallet
-    </button>
+    <main class="flex-grow px-6 py-8 md:px-10">
+      <!-- Hero Section -->
+      <div class="@container mb-16">
+        <div class="@[480px]:p-4">
+          <div
+            class="flex min-h-[480px] flex-col gap-6 bg-cover bg-center bg-no-repeat @[480px]:gap-8 @[480px]:rounded-xl items-start justify-end px-4 pb-10 @[480px]:px-10"
+            style='background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc3_z3XDCPdopW1VN_lcNxdlVoFEICcZl8PgCQRY22BDbgeSWKzhYX5omwF3k5ZQFzmm7NiSf9US08EJCb0L6hKyKQK2zoduETMbVDruZmizEbsxNDTxs2lNItIyFvwheEljgu8xUCpZ-nmyZUWXZ86mz5f63UgsYk6f7pV8s4cxXrXtjk8upjH_gZM6NWz8qFSSOW8QRxY2gopCEom3HqhVrySpN02soRVwoBs_tpsShX3wBhAvaV1EkXThLeLndDI1aTxXSGf--t");'
+          >
+            <div class="flex flex-col gap-2 text-left">
+              <h1
+                class="text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]"
+              >
+                Secure Your Transactions with Escrow Smart Contracts
+              </h1>
+              <h2 class="text-white text-sm font-normal leading-normal @[480px]:text-base @[480px]:font-normal @[480px]:leading-normal">
+                Custodia provides a secure and transparent platform for buyers and sellers to conduct transactions with confidence. Our escrow smart contracts ensure that
+                funds are only released when all terms of the agreement are met, protecting both parties from fraud and disputes. This is a decentralized application (DApp).
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      <section id="features" class="mb-16">
+        <h2 class="text-[#121416] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3">Features</h2>
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+          <div class="flex flex-1 gap-3 rounded-lg border border-[#dde1e3] bg-white p-4 flex-col">
+            <div class="text-[#121416]" data-icon="ShieldCheck" data-size="24px" data-weight="regular">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                  d="M208,40H48A16,16,0,0,0,32,56v58.78c0,89.61,75.82,119.34,91,124.39a15.53,15.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.51-80-30.69-80-109.18V56H208ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.68l50.34-50.34a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"
+                ></path>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h2 class="text-[#121416] text-base font-bold leading-tight">Secure Transactions</h2>
+              <p class="text-[#6a7681] text-sm font-normal leading-normal">Funds are held securely until all conditions are met.</p>
+            </div>
+          </div>
+          <div class="flex flex-1 gap-3 rounded-lg border border-[#dde1e3] bg-white p-4 flex-col">
+            <div class="text-[#121416]" data-icon="LockKey" data-size="24px" data-weight="regular">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                  d="M128,112a28,28,0,0,0-8,54.83V184a8,8,0,0,0,16,0V166.83A28,28,0,0,0,128,112Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,128,152Zm80-72H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"
+                ></path>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h2 class="text-[#121416] text-base font-bold leading-tight">Transparent Process</h2>
+              <p class="text-[#6a7681] text-sm font-normal leading-normal">All transactions are recorded on the blockchain for transparency.</p>
+            </div>
+          </div>
+          <div class="flex flex-1 gap-3 rounded-lg border border-[#dde1e3] bg-white p-4 flex-col">
+            <div class="text-[#121416]" data-icon="FileText" data-size="24px" data-weight="regular">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                  d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"
+                ></path>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h2 class="text-[#121416] text-base font-bold leading-tight">Dispute Resolution</h2>
+              <p class="text-[#6a7681] text-sm font-normal leading-normal">A fair and impartial process for resolving disputes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works Section -->
+      <section id="how-it-works" class="mb-16">
+        <h2 class="text-[#121416] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3">How It Works</h2>
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+          <div class="flex flex-1 gap-3 rounded-lg border border-[#dde1e3] bg-white p-4 flex-col">
+            <div class="text-[#121416]" data-icon="User" data-size="24px" data-weight="regular">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                  d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"
+                ></path>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h2 class="text-[#121416] text-base font-bold leading-tight">Connect Wallet</h2>
+              <p class="text-[#6a7681] text-sm font-normal leading-normal">Connect your MetaMask wallet to get started.</p>
+            </div>
+          </div>
+          <div class="flex flex-1 gap-3 rounded-lg border border-[#dde1e3] bg-white p-4 flex-col">
+            <div class="text-[#121416]" data-icon="Handshake" data-size="24px" data-weight="regular">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                  d="M119.76,217.94A8,8,0,0,1,112,224a8.13,8.13,0,0,1-2-.24l-32-8a8,8,0,0,1-2.5-1.11l-24-16a8,8,0,1,1,8.88-13.31l22.84,15.23,30.66,7.67A8,8,0,0,1,119.76,217.94Zm132.69-96.46a15.89,15.89,0,0,1-8,9.25l-23.68,11.84-55.08,55.09a8,8,0,0,1-7.6,2.1l-64-16a8.06,8.06,0,0,1-2.71-1.25L35.86,142.87,11.58,130.73a16,16,0,0,1-7.16-21.46L29.27,59.58h0a16,16,0,0,1,21.46-7.16l22.06,11,53-15.14a8,8,0,0,1,4.4,0l53,15.14,22.06-11a16,16,0,0,1,21.46,7.16l24.85,49.69A15.9,15.9,0,0,1,252.45,121.48Zm-46.18,12.94L179.06,80H147.24L104,122c12.66,8.09,32.51,10.32,50.32-7.63a8,8,0,0,1,10.68-.61l34.41,27.57Zm-187.54-18,17.69,8.85L61.27,75.58,43.58,66.73ZM188,152.66l-27.71-22.19c-19.54,16-44.35,18.11-64.91,5a16,16,0,0,1-2.72-24.82.6.6,0,0,1,.08-.08L137.6,67.06,128,64.32,77.58,78.73,50.21,133.46l49.2,35.15,58.14,14.53Zm49.24-36.24L212.42,66.73l-17.69,8.85,24.85,49.69Z"
+                ></path>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h2 class="text-[#121416] text-base font-bold leading-tight">Create Transaction</h2>
+              <p class="text-[#6a7681] text-sm font-normal leading-normal">Define the terms and conditions of your transaction.</p>
+            </div>
+          </div>
+          <div class="flex flex-1 gap-3 rounded-lg border border-[#dde1e3] bg-white p-4 flex-col">
+            <div class="text-[#121416]" data-icon="CurrencyCircleDollar" data-size="24px" data-weight="regular">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                <path
+                  d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-68a28,28,0,0,1-28,28h-4v8a8,8,0,0,1-16,0v-8H104a8,8,0,0,1,0-16h36a12,12,0,0,0,0-24H116a28,28,0,0,1,0-56h4V72a8,8,0,0,1,16,0v8h16a8,8,0,0,1,0,16H116a12,12,0,0,0,0,24h24A28,28,0,0,1,168,148Z"
+                ></path>
+              </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h2 class="text-[#121416] text-base font-bold leading-tight">Complete Transaction</h2>
+              <p class="text-[#6a7681] text-sm font-normal leading-normal">Funds are released upon successful completion of the agreement.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DApp Dashboard Section -->
+      <section id="dashboard" class="mb-16">
+        <h2 class="text-[#121416] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3">Escrow Dashboard</h2>
+        
+        <div class="dapp-grid">
+          <!-- Create Escrow Card -->
+          <div class="dapp-section">
+            <h3>Create Escrow</h3>
+            <div class="form-group">
+              <label for="seller">Seller Address</label>
+              <input type="text" id="seller" class="form-control" placeholder="0x...">
+            </div>
+            <div class="form-group">
+              <label for="arbiter">Arbiter Address</label>
+              <input type="text" id="arbiter" class="form-control" placeholder="0x...">
+            </div>
+            <button class="btn-dapp" onclick="createEscrow()">
+              <i class="fas fa-plus-circle"></i> Create Escrow
+            </button>
+            <div id="escrowIdResult" class="result-message"></div>
+          </div>
+          
+          <!-- Deposit to Escrow Card -->
+          <div class="dapp-section">
+            <h3>Deposit to Escrow</h3>
+            <div class="form-group">
+              <label for="depositId">Escrow ID</label>
+              <input type="number" id="depositId" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="depositAmount">Amount (ETH)</label>
+              <input type="number" id="depositAmount" class="form-control">
+            </div>
+            <button class="btn-dapp" onclick="deposit()">
+              <i class="fas fa-coins"></i> Deposit
+            </button>
+          </div>
+          
+          <!-- Mark Delivered Card -->
+          <div class="dapp-section">
+            <h3>Mark Delivered</h3>
+            <div class="form-group">
+              <label for="deliveredId">Escrow ID</label>
+              <input type="number" id="deliveredId" class="form-control">
+            </div>
+            <button class="btn-dapp" onclick="markDelivered()">
+              <i class="fas fa-check-circle"></i> Mark Delivered
+            </button>
+          </div>
+          
+          <!-- Confirm Delivery Card -->
+          <div class="dapp-section">
+            <h3>Confirm Delivery</h3>
+            <div class="form-group">
+              <label for="confirmId">Escrow ID</label>
+              <input type="number" id="confirmId" class="form-control">
+            </div>
+            <button class="btn-dapp" onclick="confirmDelivery()">
+              <i class="fas fa-clipboard-check"></i> Confirm Delivery
+            </button>
+          </div>
+          
+          <!-- Raise Dispute Card -->
+          <div class="dapp-section">
+            <h3>Raise Dispute</h3>
+            <div class="form-group">
+              <label for="disputeId">Escrow ID</label>
+              <input type="number" id="disputeId" class="form-control">
+            </div>
+            <button class="btn-dapp" onclick="raiseDispute()">
+              <i class="fas fa-exclamation-triangle"></i> Raise Dispute
+            </button>
+          </div>
+          
+          <!-- Resolve Dispute Card -->
+          <div class="dapp-section">
+            <h3>Resolve Dispute</h3>
+            <div class="form-group">
+              <label for="resolveId">Escrow ID</label>
+              <input type="number" id="resolveId" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="toSeller">Award to Seller?</label>
+              <select id="toSeller" class="form-control">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <button class="btn-dapp" onclick="resolveDispute()">
+              <i class="fas fa-gavel"></i> Resolve Dispute
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="flex justify-center bg-white py-10">
+      <div class="flex max-w-[960px] flex-1 flex-col">
+        <div class="flex flex-col gap-6 px-5 py-10 text-center @container">
+          <div class="flex flex-wrap items-center justify-center gap-6 @[480px]:flex-row @[480px]:justify-around">
+            <a class="text-[#6a7681] text-base font-normal leading-normal min-w-40" href="#">Devpost</a>
+            <a class="text-[#6a7681] text-base font-normal leading-normal min-w-40" href="#">GitHub</a>
+          </div>
+          <p class="text-[#6a7681] text-base font-normal leading-normal">© 2025 Custodia. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
   </div>
-
-  <h3>Create Escrow</h3>
-  Seller: <input type="text" id="seller" placeholder="0x..."><br/>
-  Arbiter: <input type="text" id="arbiter" placeholder="0x..."><br/>
-  <button class="btn" onclick="createEscrow()">Create</button>
-  <p id="escrowIdResult"></p>
-
-  <h3>Deposit to Escrow</h3>
-  Escrow ID: <input type="number" id="depositId"><br/>
-  Amount (ETH): <input type="number" id="depositAmount"><br/>
-  <button class="btn" onclick="deposit()">Deposit</button>
-
-  <h3>Mark Delivered</h3>
-  Escrow ID: <input type="number" id="deliveredId"><br/>
-  <button class="btn" onclick="markDelivered()">Mark Delivered</button>
-
-  <h3>Confirm Delivery</h3>
-  Escrow ID: <input type="number" id="confirmId"><br/>
-  <button class="btn" onclick="confirmDelivery()">Confirm</button>
-
-  <h3>Raise Dispute</h3>
-  Escrow ID: <input type="number" id="disputeId"><br/>
-  <button class="btn" onclick="raiseDispute()">Raise Dispute</button>
-
-  <h3>Resolve Dispute</h3>
-  Escrow ID: <input type="number" id="resolveId"><br/>
-  Award to Seller?
-  <select id="toSeller">
-    <option value="true">Yes</option>
-    <option value="false">No</option>
-  </select><br/>
-  <button class="btn" onclick="resolveDispute()">Resolve</button>
 
   <script>
     let currentAccount = null;
@@ -65,365 +360,363 @@
     const contractAddress = "0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22"; // Your Sepolia contract
 
     const abi = [
-      
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "buyer",
-				"type": "address"
-			}
-		],
-		"name": "DeliveryConfirmed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "seller",
-				"type": "address"
-			}
-		],
-		"name": "DeliveryMarked",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "party",
-				"type": "address"
-			}
-		],
-		"name": "DisputeRaised",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "buyer",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "seller",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "arbiter",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "EscrowCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "buyer",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "FundsDeposited",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "arbiter",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "sellerAwarded",
-				"type": "bool"
-			}
-		],
-		"name": "Resolved",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			}
-		],
-		"name": "confirmDelivery",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_seller",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_arbiter",
-				"type": "address"
-			}
-		],
-		"name": "createEscrow",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			}
-		],
-		"name": "deposit",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "escrows",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "buyer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "seller",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "arbiter",
-				"type": "address"
-			},
-			{
-				"internalType": "enum CustodiaFactory.State",
-				"name": "state",
-				"type": "uint8"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			}
-		],
-		"name": "getEscrowsByUser",
-		"outputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			}
-		],
-		"name": "markDelivered",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "nextEscrowId",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			}
-		],
-		"name": "raiseDispute",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "escrowId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "toSeller",
-				"type": "bool"
-			}
-		],
-		"name": "resolveDispute",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "userEscrows",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "index",
-				"type": "uint256"
-			}
-		],
-		"name": "userEscrowsView",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          }
+        ],
+        "name": "DeliveryConfirmed",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          }
+        ],
+        "name": "DeliveryMarked",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "party",
+            "type": "address"
+          }
+        ],
+        "name": "DisputeRaised",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "arbiter",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "EscrowCreated",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "FundsDeposited",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "arbiter",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "bool",
+            "name": "sellerAwarded",
+            "type": "bool"
+          }
+        ],
+        "name": "Resolved",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          }
+        ],
+        "name": "confirmDelivery",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_seller",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_arbiter",
+            "type": "address"
+          }
+        ],
+        "name": "createEscrow",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          }
+        ],
+        "name": "deposit",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "escrows",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "arbiter",
+            "type": "address"
+          },
+          {
+            "internalType": "enum CustodiaFactory.State",
+            "name": "state",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          }
+        ],
+        "name": "getEscrowsByUser",
+        "outputs": [
+          {
+            "internalType": "uint256[]",
+            "name": "",
+            "type": "uint256[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          }
+        ],
+        "name": "markDelivered",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "nextEscrowId",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          }
+        ],
+        "name": "raiseDispute",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "escrowId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "toSeller",
+            "type": "bool"
+          }
+        ],
+        "name": "resolveDispute",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "userEscrows",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          }
+        ],
+        "name": "userEscrowsView",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
     ];
 
     async function connectWallet() {
@@ -445,7 +738,7 @@
 
         currentAccount = await signer.getAddress();
         document.getElementById('walletAddress').textContent =
-          `Connected: ${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
+          `${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
 
         document.getElementById('connectWalletBtn').innerHTML =
           '<i class="fas fa-check-circle"></i> Connected';
@@ -463,12 +756,21 @@
       try {
         const seller = document.getElementById("seller").value;
         const arbiter = document.getElementById("arbiter").value;
+        
+        if (!seller || !arbiter) {
+          showResult("Please fill all fields", "error");
+          return;
+        }
+        
         const tx = await contract.createEscrow(seller, arbiter);
         const receipt = await tx.wait();
         const event = receipt.events.find(e => e.event === "EscrowCreated");
-        document.getElementById("escrowIdResult").innerText = "Escrow ID: " + event.args.escrowId;
+        
+        const resultElement = document.getElementById("escrowIdResult");
+        resultElement.textContent = "Escrow created with ID: " + event.args.escrowId.toString();
+        resultElement.className = "result-message success";
       } catch (err) {
-        alert("Error creating escrow: " + err.message);
+        showResult("Error creating escrow: " + err.message, "error");
         console.error(err);
       }
     }
@@ -476,12 +778,20 @@
     async function deposit() {
       try {
         const id = document.getElementById("depositId").value;
-        const amount = ethers.utils.parseEther(document.getElementById("depositAmount").value);
-        const tx = await contract.deposit(id, { value: amount });
+        const amount = document.getElementById("depositAmount").value;
+        
+        if (!id || !amount) {
+          showResult("Please fill all fields", "error");
+          return;
+        }
+        
+        const tx = await contract.deposit(id, { 
+          value: ethers.utils.parseEther(amount) 
+        });
         await tx.wait();
-        alert("Deposit successful.");
+        showResult("Deposit successful", "success");
       } catch (err) {
-        alert("Deposit failed: " + err.message);
+        showResult("Deposit failed: " + err.message, "error");
         console.error(err);
       }
     }
@@ -489,11 +799,17 @@
     async function markDelivered() {
       try {
         const id = document.getElementById("deliveredId").value;
+        
+        if (!id) {
+          showResult("Please enter Escrow ID", "error");
+          return;
+        }
+        
         const tx = await contract.markDelivered(id);
         await tx.wait();
-        alert("Marked as delivered.");
+        showResult("Marked as delivered", "success");
       } catch (err) {
-        alert("Failed to mark delivered: " + err.message);
+        showResult("Failed to mark delivered: " + err.message, "error");
         console.error(err);
       }
     }
@@ -501,11 +817,17 @@
     async function confirmDelivery() {
       try {
         const id = document.getElementById("confirmId").value;
+        
+        if (!id) {
+          showResult("Please enter Escrow ID", "error");
+          return;
+        }
+        
         const tx = await contract.confirmDelivery(id);
         await tx.wait();
-        alert("Delivery confirmed and funds released.");
+        showResult("Delivery confirmed and funds released", "success");
       } catch (err) {
-        alert("Confirmation failed: " + err.message);
+        showResult("Confirmation failed: " + err.message, "error");
         console.error(err);
       }
     }
@@ -513,11 +835,17 @@
     async function raiseDispute() {
       try {
         const id = document.getElementById("disputeId").value;
+        
+        if (!id) {
+          showResult("Please enter Escrow ID", "error");
+          return;
+        }
+        
         const tx = await contract.raiseDispute(id);
         await tx.wait();
-        alert("Dispute raised.");
+        showResult("Dispute raised", "success");
       } catch (err) {
-        alert("Failed to raise dispute: " + err.message);
+        showResult("Failed to raise dispute: " + err.message, "error");
         console.error(err);
       }
     }
@@ -526,13 +854,34 @@
       try {
         const id = document.getElementById("resolveId").value;
         const toSeller = document.getElementById("toSeller").value === "true";
+        
+        if (!id) {
+          showResult("Please enter Escrow ID", "error");
+          return;
+        }
+        
         const tx = await contract.resolveDispute(id, toSeller);
         await tx.wait();
-        alert("Dispute resolved.");
+        showResult("Dispute resolved", "success");
       } catch (err) {
-        alert("Resolution failed: " + err.message);
+        showResult("Resolution failed: " + err.message, "error");
         console.error(err);
       }
+    }
+
+    function showResult(message, type) {
+      const result = document.createElement("div");
+      result.className = `result-message ${type}`;
+      result.textContent = message;
+      
+      // Add to the current section
+      const currentSection = event.target.closest(".dapp-section");
+      currentSection.appendChild(result);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        result.remove();
+      }, 5000);
     }
 
     document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
