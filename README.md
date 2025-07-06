@@ -4,10 +4,13 @@ Custodia is a decentralized escrow platform built on Ethereum that provides secu
 
 ## Architecture
 
+![Custodia Architecture](Custodia_Architecture.png)
 
 ## Components
 * **Frontend:** Responsive web interface using TailwindCSS and ethers.js.
+  
 * **Wallet Integration:** MetaMask/Brave Wallet for user authentication.
+  
 * **Smart Contracts:** Escrow logic deployed on Ethereum Sepolia testnet
 
 ## Features
@@ -21,6 +24,11 @@ Custodia is a decentralized escrow platform built on Ethereum that provides secu
 * **User Dashboard:** Manage all escrow agreements in one place.
 
 * **Decentralized:** No single point of failure or control.
+
+
+## How it works
+
+![How it works](How_it_works.png)
 
 ## Smart Contract Documentation
 
