@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Custodia Frontend</title>
+  <title>Custodia Escrow</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
     .wallet-info { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
     .wallet-address { font-weight: bold; }
     .btn { padding: 8px 14px; cursor: pointer; background: #333; color: white; border: none; border-radius: 5px; }
     input, select { margin: 4px 0; padding: 6px; width: 300px; max-width: 100%; }
     h3 { margin-top: 30px; }
-    hr { margin-top: 30px; }
+    hr { margin: 30px 0; }
   </style>
 </head>
 <body>
 
-  <!-- Brave Wallet Connection Button -->
+  <!-- Wallet Connect -->
   <div class="wallet-info">
     <div class="wallet-address" id="walletAddress">Not connected</div>
     <button class="btn" id="connectWalletBtn">
@@ -29,7 +29,7 @@
   <h3>Create Escrow</h3>
   Seller: <input type="text" id="seller" placeholder="0x..."><br/>
   Arbiter: <input type="text" id="arbiter" placeholder="0x..."><br/>
-  <button class="btn" onclick="createEscrow()">Create</button><br/>
+  <button class="btn" onclick="createEscrow()">Create</button>
   <p id="escrowIdResult"></p>
 
   <h3>Deposit to Escrow</h3>
@@ -51,7 +51,7 @@
 
   <h3>Resolve Dispute</h3>
   Escrow ID: <input type="number" id="resolveId"><br/>
-  Award to Seller? 
+  Award to Seller?
   <select id="toSeller">
     <option value="true">Yes</option>
     <option value="false">No</option>
@@ -62,8 +62,9 @@
     let currentAccount = null;
     let provider, signer, contract;
 
-    const contractAddress = "0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22"; // 🔁 Replace with your deployed contract address
-    const abi = [
+    const contractAddress = "0xcecb1DCfA527d07DFf4c93dD01224F1C504aDc22"; // Your Sepolia contract
+
+    const abi = [ // Minimal ABI for interaction
       
 	{
 		"anonymous": false,
@@ -427,14 +428,22 @@
 
     async function connectWallet() {
       if (typeof window.ethereum === 'undefined') {
-        alert('No wallet found. Please install Brave Wallet or MetaMask.');
+        alert('No Ethereum provider detected. Please install Brave Wallet or MetaMask.');
         return;
       }
 
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        currentAccount = accounts[0];
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        const network = await provider.getNetwork();
 
+        if (network.chainId !== 11155111) {
+          alert("Please switch to Sepolia Testnet in your wallet.");
+          return;
+        }
+
+        currentAccount = await signer.getAddress();
         document.getElementById('walletAddress').textContent =
           `Connected: ${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
 
@@ -442,59 +451,88 @@
           '<i class="fas fa-check-circle"></i> Connected';
         document.getElementById('connectWalletBtn').disabled = true;
 
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        signer = provider.getSigner();
         contract = new ethers.Contract(contractAddress, abi, signer);
+        console.log("Contract loaded:", contract);
       } catch (error) {
-        console.error(error);
-        alert('Connection failed.');
+        console.error("Wallet connection error:", error);
+        alert('Connection failed: ' + (error.message || error));
       }
     }
 
     async function createEscrow() {
-      const seller = document.getElementById("seller").value;
-      const arbiter = document.getElementById("arbiter").value;
-      const tx = await contract.createEscrow(seller, arbiter);
-      const receipt = await tx.wait();
-      const event = receipt.events.find(e => e.event === "EscrowCreated");
-      document.getElementById("escrowIdResult").innerText = "Escrow ID: " + event.args.escrowId;
+      try {
+        const seller = document.getElementById("seller").value;
+        const arbiter = document.getElementById("arbiter").value;
+        const tx = await contract.createEscrow(seller, arbiter);
+        const receipt = await tx.wait();
+        const event = receipt.events.find(e => e.event === "EscrowCreated");
+        document.getElementById("escrowIdResult").innerText = "Escrow ID: " + event.args.escrowId;
+      } catch (err) {
+        alert("Error creating escrow: " + err.message);
+        console.error(err);
+      }
     }
 
     async function deposit() {
-      const id = document.getElementById("depositId").value;
-      const amount = ethers.utils.parseEther(document.getElementById("depositAmount").value);
-      const tx = await contract.deposit(id, { value: amount });
-      await tx.wait();
-      alert("Deposit successful");
+      try {
+        const id = document.getElementById("depositId").value;
+        const amount = ethers.utils.parseEther(document.getElementById("depositAmount").value);
+        const tx = await contract.deposit(id, { value: amount });
+        await tx.wait();
+        alert("Deposit successful.");
+      } catch (err) {
+        alert("Deposit failed: " + err.message);
+        console.error(err);
+      }
     }
 
     async function markDelivered() {
-      const id = document.getElementById("deliveredId").value;
-      const tx = await contract.markDelivered(id);
-      await tx.wait();
-      alert("Marked as delivered");
+      try {
+        const id = document.getElementById("deliveredId").value;
+        const tx = await contract.markDelivered(id);
+        await tx.wait();
+        alert("Marked as delivered.");
+      } catch (err) {
+        alert("Failed to mark delivered: " + err.message);
+        console.error(err);
+      }
     }
 
     async function confirmDelivery() {
-      const id = document.getElementById("confirmId").value;
-      const tx = await contract.confirmDelivery(id);
-      await tx.wait();
-      alert("Delivery confirmed");
+      try {
+        const id = document.getElementById("confirmId").value;
+        const tx = await contract.confirmDelivery(id);
+        await tx.wait();
+        alert("Delivery confirmed and funds released.");
+      } catch (err) {
+        alert("Confirmation failed: " + err.message);
+        console.error(err);
+      }
     }
 
     async function raiseDispute() {
-      const id = document.getElementById("disputeId").value;
-      const tx = await contract.raiseDispute(id);
-      await tx.wait();
-      alert("Dispute raised");
+      try {
+        const id = document.getElementById("disputeId").value;
+        const tx = await contract.raiseDispute(id);
+        await tx.wait();
+        alert("Dispute raised.");
+      } catch (err) {
+        alert("Failed to raise dispute: " + err.message);
+        console.error(err);
+      }
     }
 
     async function resolveDispute() {
-      const id = document.getElementById("resolveId").value;
-      const toSeller = document.getElementById("toSeller").value === "true";
-      const tx = await contract.resolveDispute(id, toSeller);
-      await tx.wait();
-      alert("Dispute resolved");
+      try {
+        const id = document.getElementById("resolveId").value;
+        const toSeller = document.getElementById("toSeller").value === "true";
+        const tx = await contract.resolveDispute(id, toSeller);
+        await tx.wait();
+        alert("Dispute resolved.");
+      } catch (err) {
+        alert("Resolution failed: " + err.message);
+        console.error(err);
+      }
     }
 
     document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
